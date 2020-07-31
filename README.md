@@ -1,17 +1,42 @@
-# OpenEBS cStor install for Free IBM Cloud (for Windows PowerShell user)
+# OpenEBS cStor install for Free IBM Cloud (for Windows PowerShell user) {ignore=true}
 
-## Objectives
+## Objectives {ignore=true}
 
 Ensure to create OpenEBS cStor volumes on a single node with a small capacity environment (without replication).
 
 > ⚠️ This document is written for Windows Powershell users.
 You only need Windows to run it. because you may not have the WSL environment.
 
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [Prerequisites](#prerequisites)
+- [Deploy OpenEBS operator](#deploy-openebs-operator)
+  - [Check running pods.](#check-running-pods)
+  - [Check all StorageClass.](#check-all-storageclass)
+  - [Check BlockDevice](#check-blockdevice)
+  - [Check detail of block devices](#check-detail-of-block-devices)
+  - [Block storage capacity](#block-storage-capacity)
+  - [Check default StoragePool](#check-default-storagepool)
+- [Deploy StoragePoolClaim](#deploy-storagepoolclaim)
+- [Create cStor StorageClass](#create-cstor-storageclass)
+- [Deploy application](#deploy-application)
+  - [Check deployment status](#check-deployment-status)
+  - [Check PVC, PV](#check-pvc-pv)
+  - [Check mount directories](#check-mount-directories)
+- [Delete application](#delete-application)
+
+<!-- /code_chunk_output -->
+
 ## Prerequisites
 
-- Public/Private Clouds
+<details><summary>Public/Private Clouds</summary>
+
   - If you want to use Free IBM Kubernetes cluster,  
     See [Free IBM Cloud Kubernetes hosting for beginners](https://github.com/ymikasa/free-ibm-cloud-kubernetes-hosting-for-beginner)
+
+</details>
 
 ## Deploy OpenEBS operator
 
@@ -66,38 +91,215 @@ blockdevice-d47004dbc0be5ca02f8edf3307d229cd 10.144.183.23 2147483648 Unclaimed 
 ```powershell
 kubectl -n openebs describe blockdevice blockdevice-92db3a5e20e7f4f40e74889670b04ec6
 ```
+<details><summary>Name: blockdevice-92db3a5e20e7f4f40e74889670b04ec6</summary>
+
 ```yaml
-Name: blockdevice-92db3a5e20e7f4f40e74889670b04ec6
-...
+Name:         blockdevice-92db3a5e20e7f4f40e74889670b04ec6
+Namespace:    openebs
+Labels:       kubernetes.io/hostname=10.144.183.23
+              ndm.io/blockdevice-type=blockdevice
+              ndm.io/managed=true
+Annotations:  <none>
+API Version:  openebs.io/v1alpha1
+Kind:         BlockDevice
 Metadata:
+  Creation Timestamp:  2020-07-30T20:39:40Z
+  Generation:          3
+  Managed Fields:
+    API Version:  openebs.io/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .:
+          f:kubernetes.io/hostname:
+          f:ndm.io/blockdevice-type:
+          f:ndm.io/managed:
+      f:spec:
+        .:
+        f:capacity:
+          .:
+          f:logicalSectorSize:
+          f:physicalSectorSize:
+          f:storage:
+        f:details:
+          .:
+          f:compliance:
+          f:deviceType:
+          f:driveType:
+          f:firmwareRevision:
+          f:hardwareSectorSize:
+          f:logicalBlockSize:
+          f:model:
+          f:physicalBlockSize:
+          f:serial:
+          f:vendor:
+        f:devlinks:
+        f:filesystem:
+        f:nodeAttributes:
+          .:
+          f:nodeName:
+        f:partitioned:
+        f:path:
+      f:status:
+        .:
+        f:claimState:
+        f:state:
+    Manager:         ndm
+    Operation:       Update
+    Time:            2020-07-30T22:48:21Z
+  Resource Version:  131113
+  Self Link:         /apis/openebs.io/v1alpha1/namespaces/openebs/blockdevices/blockdevice-92db3a5e20e7f4f40e74889670b04ec6
+  UID:               25644baf-e113-4730-82f0-131db07c8671
 Spec:
   Capacity:
-    Storage: 67108864
+    Logical Sector Size:   512
+    Physical Sector Size:  512
+    Storage:               67108864
   Details:
-    Device Type: disk
-    Drive Type: SSD
+    Compliance:
+    Device Type:           disk
+    Drive Type:            SSD
+    Firmware Revision:
+    Hardware Sector Size:  512
+    Logical Block Size:    512
+    Model:
+    Physical Block Size:   512
+    Serial:
+    Vendor:
+  Devlinks:
+  Filesystem:
   Node Attributes:
-    Node Name: 10.144.183.23
-  Path: /dev/xvdh
-...
+    Node Name:  10.144.183.23
+  Partitioned:  No
+  Path:         /dev/xvdh
+Status:
+  Claim State:  Unclaimed
+  State:        Active
+Events:         <none>
 ```
+
+</details>
 
 ```powershell
 kubectl -n openebs describe blockdevice blockdevice-d47004dbc0be5ca02f8edf3307d229cd
 ```
+<details><summary>Name: blockdevice-d47004dbc0be5ca02f8edf3307d229cd</summary>
+
 ```yaml
-Name: blockdevice-d47004dbc0be5ca02f8edf3307d229cd
-...
+Name:         blockdevice-d47004dbc0be5ca02f8edf3307d229cd
+Namespace:    openebs
+Labels:       kubernetes.io/hostname=10.144.183.23
+              ndm.io/blockdevice-type=blockdevice
+              ndm.io/managed=true
+Annotations:  <none>
+API Version:  openebs.io/v1alpha1
+Kind:         BlockDevice
 Metadata:
+  Creation Timestamp:  2020-07-30T20:39:40Z
+  Finalizers:
+    openebs.io/bd-protection
+  Generation:  4
+  Managed Fields:
+    API Version:  openebs.io/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:finalizers:
+      f:spec:
+        f:claimRef:
+          .:
+          f:apiVersion:
+          f:kind:
+          f:name:
+          f:namespace:
+          f:resourceVersion:
+          f:uid:
+      f:status:
+        f:claimState:
+    Manager:      ndo
+    Operation:    Update
+    Time:         2020-07-30T21:11:44Z
+    API Version:  openebs.io/v1alpha1
+    Fields Type:  FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:labels:
+          .:
+          f:kubernetes.io/hostname:
+          f:ndm.io/blockdevice-type:
+          f:ndm.io/managed:
+      f:spec:
+        .:
+        f:capacity:
+          .:
+          f:logicalSectorSize:
+          f:physicalSectorSize:
+          f:storage:
+        f:details:
+          .:
+          f:compliance:
+          f:deviceType:
+          f:driveType:
+          f:firmwareRevision:
+          f:hardwareSectorSize:
+          f:logicalBlockSize:
+          f:model:
+          f:physicalBlockSize:
+          f:serial:
+          f:vendor:
+        f:devlinks:
+        f:filesystem:
+        f:nodeAttributes:
+          .:
+          f:nodeName:
+        f:partitioned:
+        f:path:
+      f:status:
+        .:
+        f:state:
+    Manager:         ndm
+    Operation:       Update
+    Time:            2020-07-30T22:48:21Z
+  Resource Version:  131115
+  Self Link:         /apis/openebs.io/v1alpha1/namespaces/openebs/blockdevices/blockdevice-d47004dbc0be5ca02f8edf3307d229cd
+  UID:               43981f35-7649-46ba-a0cb-d2d40b734928
 Spec:
   Capacity:
-    Storage: 2147483648
+    Logical Sector Size:   512
+    Physical Sector Size:  512
+    Storage:               2147483648
+  Claim Ref:
+    API Version:       openebs.io/v1alpha1
+    Kind:              BlockDeviceClaim
+    Name:              bdc-43981f35-7649-46ba-a0cb-d2d40b734928
+    Namespace:         openebs
+    Resource Version:  106084
+    UID:               e2e4f66e-c727-4f09-aac7-82d4c3090087
   Details:
-    Device Type: disk
-    Drive Type: SSD
-  Path: /dev/xvdb
-...
+    Compliance:
+    Device Type:           disk
+    Drive Type:            SSD
+    Firmware Revision:
+    Hardware Sector Size:  512
+    Logical Block Size:    512
+    Model:
+    Physical Block Size:   512
+    Serial:
+    Vendor:
+  Devlinks:
+  Filesystem:
+  Node Attributes:
+    Node Name:  10.144.183.23
+  Partitioned:  No
+  Path:         /dev/xvdb
+Status:
+  Claim State:  Claimed
+  State:        Active
+Events:         <none>
 ```
+
+</details>
 
 ### Block storage capacity
 
@@ -255,18 +457,18 @@ persistentvolume/pvc-cb1fee9c-62ba-481e-b6dd-0c5c5f2d4cfe 1950Mi   RWO          
 kubectl -n cstor-example exec -it (kubectl -n cstor-example get po -l app=cstor-example -o jsonpath='{.items[0].metadata.name}') -- df -h
 ```
 ```text
-Filesystem Size Used Avail Use% Mounted on
-overlay    97G  9.7G   87G  10% /
-tmpfs      64M     0   64M   0% /dev
-tmpfs      2.0G    0  2.0G   0% /sys/fs/cgroup
-/dev/xvda2 97G  9.7G   87G  10% /etc/hosts
-shm        64M     0   64M   0% /dev/shm
-/dev/sda   976M 1.3M  959M   1% /var/log/nginx
-/dev/sdb   976M 1.3M  959M   1% /usr/share/nginx/html
-tmpfs      2.0G  16K  2.0G   1% /run/secrets/kubernetes.io/serviceaccount
-tmpfs      2.0G    0  2.0G   0% /proc/acpi
-tmpfs      2.0G    0  2.0G   0% /proc/scsi
-tmpfs      2.0G    0  2.0G   0% /sys/firmware
+Filesystem      Size  Used Avail Use% Mounted on
+overlay          97G   11G   87G  11% /
+tmpfs            64M     0   64M   0% /dev
+tmpfs           2.0G     0  2.0G   0% /sys/fs/cgroup
+/dev/xvda2       97G   11G   87G  11% /etc/hosts
+shm              64M     0   64M   0% /dev/shm
+/dev/sdb         45M  810K   43M   2% /var/log/nginx
+/dev/sda        1.9G  2.9M  1.9G   1% /usr/share/nginx/html
+tmpfs           2.0G   16K  2.0G   1% /run/secrets/kubernetes.io/serviceaccount
+tmpfs           2.0G     0  2.0G   0% /proc/acpi
+tmpfs           2.0G     0  2.0G   0% /proc/scsi
+tmpfs           2.0G     0  2.0G   0% /sys/firmware
 ```
 Storage attached /dev/sda, /dev/sdb from the storage pool.
 
